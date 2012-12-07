@@ -1,6 +1,6 @@
 
 
-function [z, reps, iter, lmb, kvec, R1, info] = SimPro(X, maxit, eps, verbose, kvec0, R)
+function [z, reps, iter, lmb, kvec, R1, info] = SimPro(X, maxit, calceps, verbose, kvec0, R)
 
 if verbose(1) >= 0
         printf("\n%s\n\n", "$Id: SimPro.w,v 2.20 2011/11/17 12:40:14 nurmi Exp nurmi $");
@@ -37,7 +37,7 @@ if size(kvec0) == 0
         [ vx ix ] = min(gg);
         kvec = [ix]; lmb = lmb_old = [1]; baslen = 1; z = X(:,ix);
         R1 = R = sqrt(vx)*ones(1,1);
-        if vx < eps*eps
+        if vx < calceps*calceps
                 reps = vx;
                 info = OPTIMAL;
                 return
@@ -61,7 +61,7 @@ else
                 return;
         endif
         
-        if !all(lmb_old + eps/baslen > 0)
+        if !all(lmb_old + calceps/baslen > 0)
                 printf(" Initialization error. Negative baricentrics.\n");
                 info = INIT_ERROR;
                 return
@@ -96,7 +96,7 @@ while ( iter(1) < maxit )
         zz = z'*z;
         dkvec = setdiff([1:nvec], abs(kvec));
         vcos = z'*X(:, dkvec) - zz;
-        if all(vcos + eps > 0)
+        if all(vcos + calceps > 0)
                 retcode = OPTIMAL;
                 reps = min(vcos);
                 kvec = abs(kvec);
@@ -147,7 +147,7 @@ cinfo
         while 1
                 
 
-                if all(lmb_new + eps/rows(lmb_new) > 0)
+                if all(lmb_new + calceps/rows(lmb_new) > 0)
                         z = X(:, abs(kvec))*lmb_new;
                         lmb_old = lmb_new;
                         
@@ -195,8 +195,8 @@ cinfo
                                 return;
                         endif
                         
-                        lmb_new_neg = [1:rows(lmb_old)](lmb_new < -eps);
-                        badidx = (lmb_old < eps) & (lmb_new > -eps);
+                        lmb_new_neg = [1:rows(lmb_old)](lmb_new < -calceps);
+                        badidx = (lmb_old < calceps) & (lmb_new > -calceps);
                         iox = [1: rows(lmb_old)](badidx)
                         lmb = lmb_old;
                         info = NO_WAY_TOI;
@@ -304,9 +304,9 @@ lmb = lmb_old;
 endfunction
 
 
-function [ lmb_clean RC isn ] = cleanbas(lmb, R, eps)
+function [ lmb_clean RC isn ] = cleanbas(lmb, R, calceps)
 RC = R; lmb_clean = lmb; isn = [1 : rows(lmb)];
-is = [1 : rows(lmb)](abs(lmb) < eps/rows(lmb));
+is = [1 : rows(lmb)](abs(lmb) < calceps/rows(lmb));
 if columns(is) == 0
         return
 is

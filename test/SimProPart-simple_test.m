@@ -1,8 +1,7 @@
 #!/usr/bin/env octave
-addpath("../src");
-addpath("../test");
+addpath("../lib");
 
-function [B, C] = splitEvenOdd (A)
+function [B, C] = splitEvenOdd(A)
     B = A(:, 1:2:end);
     C = A(:, 2:2:end);
 endfunction
@@ -13,7 +12,7 @@ function [B, C] = splitMatrix(A, p)
     C = A(:, criteria > 0);
 endfunction
 
-A = testgen(3)
+A = testgen(3);
 
 sol2 = SimProPart(A, @splitMatrix)
 norm(sol2)

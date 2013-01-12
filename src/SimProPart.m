@@ -15,13 +15,13 @@ function z = SimProPart(X, splitFunc)
     x1 = SimProAdjusted(X1);
     x2 = SimProAdjusted(X2);
 
-    z = SimPro([x1 x2], 1e5, epsilon, [-1 -1], [], [])
+    z = SimPro([x1 x2], 1e5, epsilon, [-1 -1], [], []);
     it = 1;
     while any(z'*X - sumsq(z) < -epsilon) && ( it < 1000)
         [X1, X2] = splitFunc(X, z);
-        Y = parcellfun(2, @(x) (SimPro(x, 1e5, epsilon, [-1 -1], [], [])), {[X1 z], [X2 z]}, 'ChunksPerProc', 1)
+        Y = parcellfun(2, @(x) (SimPro(x, 1e5, epsilon, [-1 -1], [], [])), {[X1 z], [X2 z]}, 'ChunksPerProc', 1, 'VerboseLevel', 0);
         [z, reps, iter, lmb, kvec, R1, info] = SimProAdjusted([Y(:,1) Y(:,2)]);
-        printf(" it %4d norm(z) %20.12e\n", it, norm(z));
+#        printf(" it %4d norm(z) %20.12e\n", it, norm(z));
         it++;
     endwhile
 endfunction

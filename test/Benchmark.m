@@ -7,7 +7,7 @@ function [B, C] = splitMatrix(A, p)
     C = A(:, criteria > 0);
 endfunction
 
-benchmarkSizes = [3 10 50 100 150];
+benchmarkSizes = [3 10 50 100];
 
 printf("[\n");
 for sz = benchmarkSizes
@@ -15,12 +15,12 @@ for sz = benchmarkSizes
     A = testgen(sz);
     tic;
     # do calc
-    s1 = SimProPartSerial(A, @splitMatrix);
-    printf('  "serial_time": %f,\n', toc);
+    s1 = SimProPartNative(A, @splitMatrix);
+    printf('  "native_time": %f,\n', toc);
     tic;
     # do calc
-    s2 = SimProPart(A, @splitMatrix);
-    printf('  "parallel_time": %f\n},\n', toc);
+    s2 = SimProPartParallelNative(A, @splitMatrix);
+    printf('  "parallel_native_time": %f\n},\n', toc);
 endfor;
 printf("]");
 

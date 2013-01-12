@@ -126,7 +126,6 @@ while ( iter(1) < maxit )
                 R = R1;
                 
         case 1
-cinfo                
                 kvec(baslen) *= -1;
                 lmb_new = bari(X, kvec, R);
                 

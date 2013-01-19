@@ -2,13 +2,9 @@
 % splitFunc - function handler for some matrix decomposition method, accepts X and initial vector,
 %   which formed as convex combinations of vectors from X
 
-function z = SimProPart(X, splitFunc)
+function z = SimProPart(X, w, splitFunc)
     epsilon = 1.e-8;
-    do % TODO: find a better a way to force non empty decomposition
-        w = rand(1, columns(X));
-        w = w / norm(w);
-        [X1, X2] = splitFunc(X, X*w');
-    until (columns(X1) > 0 && columns(X2) > 0)
+    [X1, X2] = splitFunc(X, X*w');
 
     SimProAdjusted = @(x) (SimPro(x, 1e5, epsilon, [-1 -1], [], []));
 
@@ -17,7 +13,7 @@ function z = SimProPart(X, splitFunc)
 
     z = SimPro([x1 x2], 1e5, epsilon, [-1 -1], [], []);
     it = 1;
-    while any(z'*X - sumsq(z) < -epsilon) && ( it < 1000)
+    while any(z'*X - sumsq(z) < -epsilon) && ( it < 5000)
         [X1, X2] = splitFunc(X, z);
         Y = parcellfun(2, @(x) (SimPro(x, 1e5, epsilon, [-1 -1], [], [])), {[X1 z], [X2 z]}, 'ChunksPerProc', 1, 'VerboseLevel', 0);
         [z, reps, iter, lmb, kvec, R1, info] = SimProAdjusted([Y(:,1) Y(:,2)]);

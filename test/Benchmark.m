@@ -7,21 +7,33 @@ function [B, C] = splitMatrix(A, p)
     C = A(:, criteria > 0);
 endfunction
 
-benchmarkSizes = [3 10 50 100];
+benchmarkSizes = [3 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100];
 
-printf("[\n");
+function w = genInitialSplit(X, splitFunc)
+    do % TODO: find a better a way to force non empty decomposition
+        w = rand(1, columns(X));
+        w = w / norm(w);
+        [X1, X2] = splitFunc(X, X*w');
+    until (columns(X1) > 0 && columns(X2) > 0)
+endfunction
+
+printf("size,serial_time,parallel_time,native_time\n");
 for sz = benchmarkSizes
-    printf('{\n  "size": %d,\n', sz);
+    printf('%d,', sz);
     A = testgen(sz);
+    w = genInitialSplit(A, @splitMatrix);
     tic;
     # do calc
-    s1 = SimProPartNative(A, @splitMatrix);
-    printf('  "native_time": %f,\n', toc);
+    s1 = SimProPartSerial(A, w, @splitMatrix);
+    printf('%f,', toc);
     tic;
     # do calc
-    s2 = SimProPartParallelNative(A, @splitMatrix);
-    printf('  "parallel_native_time": %f\n},\n', toc);
+    s2 = SimProPart(A, w, @splitMatrix);
+    printf('%f,', toc);
+    tic;
+    # do calc
+    s3 = SimProPartNative(A, w, @splitMatrix);
+    printf('%f\n', toc);
 endfor;
-printf("]");
 
 # vim:ft=octave

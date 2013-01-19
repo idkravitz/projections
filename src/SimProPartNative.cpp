@@ -16,35 +16,20 @@ DEFUN_DLD (SimProPartNative, args, nargout,
         int nargin = args.length();
         Matrix X = args(0).matrix_value();
         Matrix X1, X2;
-        octave_function *fcn = args(1).function_value();
+        NDArray w = args(1).array_value();
+        octave_function *fcn = args(2).function_value();
 
         std::string octave_rand = "rand";
         std::string octave_norm = "norm";
         std::string simPro = "SimPro";
 
-        do {
-                octave_value_list randArgs;
-                randArgs(0) = 1;
-                randArgs(1) = X.columns();
-                octave_value_list _w = feval(octave_rand, randArgs, 1);
-                NDArray w = _w(0).array_value();
+        octave_value_list splitFuncArgs;
+        splitFuncArgs(0) = X;
+        splitFuncArgs(1) = X * ColumnVector(w);
+        octave_value_list split = feval(fcn, splitFuncArgs, 2);
 
-                octave_value_list normArgs;
-                normArgs(0) = w;
-                octave_value_list _normW = feval(octave_norm, normArgs, 1);
-                double normW = _normW(0).double_value();
-
-                w = w / normW;
-
-                octave_value_list splitFuncArgs;
-                splitFuncArgs(0) = X;
-                splitFuncArgs(1) = X * ColumnVector(w);
-                octave_value_list split = feval(fcn, splitFuncArgs, 2);
-
-                X1 = split(0).matrix_value();
-                X2 = split(1).matrix_value();
-
-        } while(X1.columns() == 0 || X2.columns() == 0);
+        X1 = split(0).matrix_value();
+        X2 = split(1).matrix_value();
 
         octave_value_list simProArgs;
         simProArgs(1) = 1e5;
@@ -70,7 +55,7 @@ DEFUN_DLD (SimProPartNative, args, nargout,
 
         int it = 1;
         octave_value_list result;
-        while ((z * X - zsmsq).test_any(testIsNegative) && it < 1000) {
+        while ((z * X - zsmsq).test_any(testIsNegative) && it < 5000) {
                 octave_value_list splitFuncArgs;
                 ColumnVector zc = z.transpose();
                 splitFuncArgs(0) = X;
